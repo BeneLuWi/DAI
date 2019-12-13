@@ -6,12 +6,14 @@ public class FIPA_Message {
 	private int sender;
 	private int receiver;
 	private FIPA_Performative performative;
-	private String content;
+	private FIPA_Message_Content content;
+	
+	
 	
 	//Eine Nachricht besteht aus den folgenden 4 Parametern: 
 	//Sender, Empf�nger, einem FIPA-Performative und einem Nachrichteninhalt.
 	
-	public FIPA_Message( int sender, int receiver, FIPA_Performative performative, String content ){
+	public FIPA_Message( int sender, int receiver, FIPA_Performative performative, FIPA_Message_Content content ){
 		this.setPerformative( performative );
 		this.setSender( sender );
 		this.setReceiver( receiver );
@@ -41,13 +43,16 @@ public class FIPA_Message {
 	
 	private void setReceiver(int receiver){
 		this.receiver = receiver;
-	};
-	
-	public String getContent(){
-		return this.content;
-	};
-	
-	private void setContent(String content){
+	}
+
+	public FIPA_Message_Content getContent() {
+		return content;
+	}
+
+	public void setContent(FIPA_Message_Content content) {
 		this.content = content;
 	};
+	
+	
+	
 }

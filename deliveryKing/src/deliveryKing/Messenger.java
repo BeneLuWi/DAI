@@ -15,7 +15,6 @@ public class Messenger {
 	
 	
 	public Messenger(ContinuousSpace<Object> space, Grid<Object> grid, Warehouse homeWarehouse) {
-		super();
 		this.space = space;
 		this.grid = grid;
 		this.homeWarehouse = homeWarehouse;
@@ -23,6 +22,11 @@ public class Messenger {
 	}
 	
 	
+	public double distanceToLocation(GridPoint dest) {
+		NdPoint current = space.getLocation(this);
+		NdPoint destination = new NdPoint(dest.getX(), dest.getY());
+		return space.getDistance(current, destination);
+	}
 	
 	
 	public void moveTowards(GridPoint pt) {

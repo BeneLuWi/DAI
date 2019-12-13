@@ -40,13 +40,18 @@ public class DeliveryKingBuilder  implements ContextBuilder<Object>{
 						true, 
 						50, 50));
 	
-				
+		DeliveryCenter deliveryCenter = new DeliveryCenter();		
+		MessageCenter msgCenter = new MessageCenter();
+		
+		Coordinator coordinator = new Coordinator(msgCenter, deliveryCenter);
+		context.add(coordinator);
+		
 		// Initialize Customers and place them in Space and Grid
 		double[] x = {15, 5, 40, 35, 40, 10};
 		double[] y = {10, 35, 10, 45, 35, 35};
 		for (int i = 0; i < 6; i++) {
 			
-			Customer customer = new Customer(space, grid);
+			Customer customer = new Customer(space, grid, deliveryCenter);
 			context.add(customer);
 			space.moveTo(customer, x[i], y[i]);
 		}
