@@ -65,7 +65,7 @@ public class DeliveryKingBuilder  implements ContextBuilder<Object>{
 			context.add(warehouse);
 			space.moveTo(warehouse, wx[i], wy[i]);
 			
-			Messenger messenger = new Messenger(space, grid, warehouse);
+			Messenger messenger = new Messenger(space, grid, warehouse, msgCenter, i+1);
 			context.add(messenger);
 			space.moveTo(messenger, wx[i], wy[i]);
 			

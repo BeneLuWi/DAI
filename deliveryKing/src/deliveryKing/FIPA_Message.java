@@ -24,8 +24,8 @@ public class FIPA_Message {
 		this.performative = performative;
 	}
 	
-	public String getPerformative(){
-		return this.performative.toString();
+	public FIPA_Performative getPerformative(){
+		return this.performative;
 	}
 	
 	public int getSender(){

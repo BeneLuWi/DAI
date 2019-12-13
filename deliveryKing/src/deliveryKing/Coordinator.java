@@ -17,8 +17,6 @@ public class Coordinator {
 	}
 
 
-
-
 	@ScheduledMethod(start = 1, interval = 1)
 	public void pickDelivery() {
 		Optional<Delivery> optDelivery = deliveryCenter.getFirstUndelivered();
