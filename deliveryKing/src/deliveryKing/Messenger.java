@@ -14,8 +14,9 @@ public class Messenger {
 	private Warehouse homeWarehouse;
 	private int id;
 	private MessageCenter msgCenter;
-	private GridPoint goal;
 	
+	private GridPoint goal;
+	private Delivery delivery;
 	
 	public Messenger(ContinuousSpace<Object> space, Grid<Object> grid, Warehouse homeWarehouse, MessageCenter msgCenter, int id) {
 		this.space = space;
@@ -35,8 +36,9 @@ public class Messenger {
 			switch(msg.getPerformative()) {
 				case CALL_FOR_PROPOSAL:
 					if(inWarehouse) {
-						Customer c = msg.getContent().getDelivery().getCustomer();						
-						msgCenter.send(id, 0, FIPA_Performative.PROPOSE, distanceToLocation(grid.getLocation(c)));
+						Delivery d = msg.getContent().getDelivery();
+						Customer c = d.getCustomer();						
+						msgCenter.send(id, 0, FIPA_Performative.PROPOSE, d, distanceToLocation(grid.getLocation(c)));
 					} else {
 						msgCenter.send(id, 0, FIPA_Performative.REFUSE, msg.getContent().getDelivery());
 					}					
@@ -45,6 +47,7 @@ public class Messenger {
 				case ACCEPT_PROPOSAL:
 					Customer c = msg.getContent().getDelivery().getCustomer();
 					inWarehouse = false;
+					delivery = msg.getContent().getDelivery();
 					goal = grid.getLocation(c);
 					break;
 					
@@ -56,12 +59,7 @@ public class Messenger {
 					break;
 			
 			}
-			
-			
-			
 		}
-		
-		
 	}
 	
 	
@@ -73,7 +71,7 @@ public class Messenger {
 		
 		if (grid.getLocation(this).equals(goal) && !inWarehouse) {
 			// Package Delivered
-			msgCenter.send(id, 0, FIPA_Performative.INFORM);
+			msgCenter.send(id, 0, FIPA_Performative.INFORM, delivery);
 			goal = grid.getLocation(homeWarehouse);
 			moveTowards(goal);
 		}

@@ -15,6 +15,8 @@ public class Delivery {
 		return customer;
 	}
 
+	
+	
 	public void setCustomer(Customer customer) {
 		this.customer = customer;
 	}

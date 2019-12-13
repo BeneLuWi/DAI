@@ -45,6 +45,11 @@ public class MessageCenter {
 		this.addMessage( new FIPA_Message(sender, receiver, performative, null) );
 	}
 	
+	public void send(int sender, int receiver, FIPA_Performative performative, Delivery delivery, Double distance){
+		FIPA_Message_Content content = new FIPA_Message_Content(delivery, distance);
+		this.addMessage( new FIPA_Message(sender, receiver, performative, content) );
+	}
+	
 	public void send(int sender, int receiver, FIPA_Performative performative, Double distance){
 		FIPA_Message_Content content = new FIPA_Message_Content(distance);
 		this.addMessage( new FIPA_Message(sender, receiver, performative, content) );

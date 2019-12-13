@@ -5,6 +5,12 @@ public class FIPA_Message_Content {
 	private Delivery delivery;
 	
 	
+	
+	public FIPA_Message_Content(Delivery delivery, double distance) {
+		this.distance = distance;
+		this.delivery = delivery;
+	}
+
 	public FIPA_Message_Content(double distance) {
 		this.distance = distance;
 	}

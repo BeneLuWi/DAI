@@ -22,8 +22,28 @@ public class DeliveryCenter {
 											.findAny();
 		
 		if (delivery.isPresent()) delivery.get().setBusy(true);
-		
 		return delivery;
+	}
+	
+	// Increase number of rejections for delivery
+	public void rejectDelivery(Delivery delivery) {
+		for (Delivery d: deliveries) {
+			if (d == delivery) {
+				// Puts delivery back into queue if all messengers reject
+				d.setBusy(false);
+			}
+		}
+		
+	}
+	
+	// Increase number of rejections for delivery
+	public void complete(Delivery delivery) {
+		for (Delivery d: deliveries) {
+			if (d == delivery) {
+				// Puts delivery back into queue if all messengers reject
+				d.setDelivered(true);
+			}
+		}
 		
 	}
 	
