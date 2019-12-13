@@ -42,9 +42,12 @@ public class DeliveryKingBuilder  implements ContextBuilder<Object>{
 	
 		DeliveryCenter deliveryCenter = new DeliveryCenter();		
 		MessageCenter msgCenter = new MessageCenter();
+		context.add(msgCenter);
+		space.moveTo(msgCenter, 0, 0);
 		
 		Coordinator coordinator = new Coordinator(msgCenter, deliveryCenter);
 		context.add(coordinator);
+		space.moveTo(coordinator, 0, 0);
 		
 		// Initialize Customers and place them in Space and Grid
 		double[] x = {15, 5, 40, 35, 40, 10};
@@ -57,7 +60,7 @@ public class DeliveryKingBuilder  implements ContextBuilder<Object>{
 		}
 		
 		// Initialize Warehouses and Messengers and place them in Space and Grid
-		double[] wx = {2, 45, 5, 45};
+		double[] wx = {5, 45, 5, 45};
 		double[] wy = {5, 5, 25, 45};
 		for (int i = 0; i < 4; i++) {
 			

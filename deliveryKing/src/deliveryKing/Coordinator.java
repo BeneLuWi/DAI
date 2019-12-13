@@ -13,21 +13,26 @@ public class Coordinator {
 	private int id = 0;
 	private int[] messengerIds = {1,2,3,4};
 	private List<FIPA_Message> messages = new ArrayList<>();
-	
+	private boolean negotiating;
 	
 	public Coordinator(MessageCenter msgCenter, DeliveryCenter deliveryCenter) {
 		this.msgCenter = msgCenter;
 		this.deliveryCenter = deliveryCenter;
+		this.negotiating = false;
 	}
 
 
 	@ScheduledMethod(start = 1, interval = 1)
 	public void pickDelivery() {
+		if (negotiating) return;
+		
 		Optional<Delivery> optDelivery = deliveryCenter.getFirstUndelivered();
 		
 		if (!optDelivery.isPresent()) {
 			return;
 		} else {
+			System.out.println("Start negotiation");
+			negotiating = true;
 			Delivery delivery = optDelivery.get();
 			FIPA_Message_Content content = new FIPA_Message_Content(delivery);
 			for (int msgId : messengerIds) {
@@ -68,6 +73,7 @@ public class Coordinator {
 				.filter(m -> m.getContent().getDelivery() == d)
 				.collect(Collectors.toList());
 		
+		// If not all messengers answered yet, return
 		if (msgs.size() < messengerIds.length) return;
 		
 		int refuseCount = 0;
@@ -94,12 +100,23 @@ public class Coordinator {
 				.stream()
 				.filter(m -> m.getSender() != messengerId && m.getPerformative() == FIPA_Performative.PROPOSE)
 				.collect(Collectors.toList())
-				.forEach(m -> msgCenter.send(id, messengerId, FIPA_Performative.REJECT_PROPOSAL, d));
+				.forEach(m -> msgCenter.send(id, m.getSender(), FIPA_Performative.REJECT_PROPOSAL, d));
+			
+			System.out.println("End negotiation: Send " + messengerId);
+			
 		} else {
-			deliveryCenter.rejectDelivery(d);			
+			deliveryCenter.rejectDelivery(d);
+			System.out.println("End negotiation: Reject");
 		}
 		
+		// Remove all messages related to the requested Delivery
+		messages = messages
+				.stream()
+				.filter(m -> m.getContent().getDelivery() != d)
+				.collect(Collectors.toList());
 		
+		
+		negotiating = false;
 	}
 	
 }

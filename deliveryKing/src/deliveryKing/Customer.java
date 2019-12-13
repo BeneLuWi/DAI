@@ -15,7 +15,7 @@ public class Customer {
 		this.deliveryCenter = deliveryCenter;
 	}
 	
-	@ScheduledMethod(start = 1, interval = 50)
+	@ScheduledMethod(start = 1, interval = 100)
 	public void orderDelivery() {
 		deliveryCenter.addDelivery(this);		
 	}

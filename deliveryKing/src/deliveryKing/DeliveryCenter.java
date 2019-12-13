@@ -42,6 +42,14 @@ public class DeliveryCenter {
 			if (d == delivery) {
 				// Puts delivery back into queue if all messengers reject
 				d.setDelivered(true);
+				
+				int count = (int) deliveries
+						.stream()
+						.filter(del -> !del.isDelivered() )
+						.count();
+				
+				System.out.println("Package delivered " + count + " to go" );
+				
 			}
 		}
 		

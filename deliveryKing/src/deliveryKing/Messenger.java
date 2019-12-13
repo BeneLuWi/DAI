@@ -32,14 +32,15 @@ public class Messenger {
 	public void checkInvoice() {
 		if (msgCenter.messagesAvailable(id)) {
 			FIPA_Message msg = msgCenter.getMessage(id);
-			
 			switch(msg.getPerformative()) {
 				case CALL_FOR_PROPOSAL:
 					if(inWarehouse) {
 						Delivery d = msg.getContent().getDelivery();
-						Customer c = d.getCustomer();						
+						Customer c = d.getCustomer();
+						System.out.println(id + ": Propose " + distanceToLocation(grid.getLocation(c)));
 						msgCenter.send(id, 0, FIPA_Performative.PROPOSE, d, distanceToLocation(grid.getLocation(c)));
 					} else {
+						System.out.println(id + ": Refuse");
 						msgCenter.send(id, 0, FIPA_Performative.REFUSE, msg.getContent().getDelivery());
 					}					
 					break;
@@ -65,15 +66,21 @@ public class Messenger {
 	
 	@ScheduledMethod(start = 1, interval = 1)
 	public void walk() {
-		if (grid.getLocation(this).equals(grid.getLocation(homeWarehouse))) {
-			inWarehouse = true;
+		if (goal == null) return; 
+		
+		if (!grid.getLocation(this).equals(goal)) {
+			moveTowards(goal);
 		}
 		
-		if (grid.getLocation(this).equals(goal) && !inWarehouse) {
+		else if (grid.getLocation(this).equals(goal) && !inWarehouse) {
 			// Package Delivered
 			msgCenter.send(id, 0, FIPA_Performative.INFORM, delivery);
 			goal = grid.getLocation(homeWarehouse);
 			moveTowards(goal);
+		}
+		
+		if (grid.getLocation(this).equals(grid.getLocation(homeWarehouse))) {
+			inWarehouse = true;
 		}
 			
 	}
