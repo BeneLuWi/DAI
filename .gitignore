@@ -6,3 +6,5 @@ test_bin/
 test-bin/
 bin-standalone/
 Repast.settings
+/.metadata/
+repast-licenses/
