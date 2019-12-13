@@ -33,7 +33,6 @@ public class Robot {
 	private Grid<Object> grid;
 	
 	
-	
 
 	public Robot(ContinuousSpace<Object> space, Grid<Object> grid) {
 		this.space = space;
