@@ -13,7 +13,6 @@ import repast.simphony.random.RandomHelper;
 import repast.simphony.space.SpatialMath;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.NdPoint;
-import repast.simphony.space.graph.Network;
 import repast.simphony.space.grid.Grid;
 import repast.simphony.space.grid.GridPoint;
 import repast.simphony.util.ContextUtils;
@@ -28,6 +27,8 @@ public class Zombie {
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
 	private boolean moved;
+	
+	private boolean trapped;
 
 	public Zombie(ContinuousSpace<Object> space, Grid<Object> grid) {
 		this.space = space;
@@ -36,6 +37,9 @@ public class Zombie {
 
 	@ScheduledMethod(start = 1, interval = 1)
 	public void step () {
+		
+		if (trapped) return;
+		
 		// get the grid location of this Zombie
 		GridPoint pt = grid.getLocation(this);
 		
@@ -60,23 +64,55 @@ public class Zombie {
 	public void moveTowards(GridPoint pt) {
 		if (!pt.equals(grid.getLocation(this))) {
 			NdPoint current = space.getLocation(this);
-			NdPoint destination = new NdPoint(pt.getX(), pt.getY());
+			
+			int x = pt.getX() <= 0 ? 2 : pt.getX();
+			x = x >= grid.getDimensions().getWidth() ? x - 2 : x;
+			
+			int y = pt.getY() <= 0 ? 2 : pt.getY();
+			y = y >= grid.getDimensions().getHeight() ? y - 2 : y;
+					
+			NdPoint destination = new NdPoint(x,y);
+			
 			double angle = SpatialMath.calcAngleFor2DMovement(space, current, destination);
 			space.moveByVector(this,  1,  angle, 0);
-			current = space.getLocation(this);
-			grid.moveTo(this, (int) current.getX(), (int) current.getY());
+						
+			current = space.getLocation(this);		
+			grid.moveTo(this, (int) Math.round(current.getX()), (int) Math.round(current.getY()));
 			
 			moved = true;
+			
+			List<Object> traps = new ArrayList<Object>();
+			for(Object obj : grid.getObjectsAt(myLocation().getX(), myLocation().getY())) {
+				if(obj instanceof Trap) {
+					traps.add(obj);
+				}
+			}
+			
+			if (traps.size() > 0) {
+				trapped = true;
+				System.out.println("I'm trapped at (" + myLocation().getX() + ", " + myLocation().getY() + ")");
+			}
+			
 		}	
 	}
 	
 	public void infect() {
 		List<Object> humans = new ArrayList<Object>();
+		List<Object> children = new ArrayList<Object>();
 		for(Object obj : grid.getObjectsAt(myLocation().getX(), myLocation().getY())) {
 			if(obj instanceof Human) {
 				humans.add(obj);
 			}
+			if(obj instanceof Child) {
+				children.add(obj);
+			}
 		}
+		
+		children.forEach(child -> {
+			NdPoint spacePt = space.getLocation(child);
+			Context<Object> context = ContextUtils.getContext(child);
+			context.remove(child);
+		});
 		
 		if(humans.size() > 0) {
 			int index = RandomHelper.nextIntFromTo(0, humans.size()-1);
@@ -89,8 +125,6 @@ public class Zombie {
 			space.moveTo(zombie, spacePt.getX(), spacePt.getY());
 			grid.moveTo(zombie, myLocation().getX(), myLocation().getY());
 			
-			Network<Object> net = (Network<Object>)context.getProjection("infection network");
-			net.addEdge(this, zombie);
 		}
 	}
 	

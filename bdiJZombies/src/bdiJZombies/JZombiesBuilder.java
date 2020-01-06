@@ -31,7 +31,7 @@ public class JZombiesBuilder implements ContextBuilder<Object>{
 		NetworkBuilder<Object> netBuilder = new NetworkBuilder<Object>("infection network", context, true);
 		netBuilder.buildNetwork();
 		
-		context.setId("jzombies");
+		context.setId("bdiJZombies");
 		ContinuousSpaceFactory spaceFactory = 
 				ContinuousSpaceFactoryFinder.createContinuousSpaceFactory(null);
 		ContinuousSpace<Object> space = 
@@ -53,10 +53,21 @@ public class JZombiesBuilder implements ContextBuilder<Object>{
 						true, 
 						50, 50));
 		
-		int zombieCount = 5, humanCount = 100;
+		int zombieCount = 10;
+		int humanCount = 5;
+		int materialCount = 150;
+		int childCount = 40;
 		
 		for (int i = 0; i < zombieCount; i++) {
 			context.add(new Zombie(space, grid));
+		}
+		
+		for (int i = 0; i < childCount; i++) {
+			context.add(new Child(space, grid));
+		}
+		
+		for (int i = 0; i < materialCount; i++) {
+			context.add(new Material(space, grid));
 		}
 		
 		for (int i = 0; i < humanCount; i++) {
