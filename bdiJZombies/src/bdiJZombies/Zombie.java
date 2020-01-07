@@ -128,6 +128,10 @@ public class Zombie {
 		}
 	}
 	
+	public boolean isTrapped() {
+		return trapped;
+	}
+	
 	private GridPoint myLocation() {
 		return grid.getLocation(this);
 	}

@@ -58,6 +58,8 @@ public class JZombiesBuilder implements ContextBuilder<Object>{
 		int materialCount = 150;
 		int childCount = 40;
 		
+		context.add(new Overseer());
+		
 		for (int i = 0; i < zombieCount; i++) {
 			context.add(new Zombie(space, grid));
 		}
