@@ -17,12 +17,18 @@ public class DeliveryCenter {
 		Optional<Delivery> delivery = deliveries
 											.stream()
 											.filter(d -> !d.isDelivered() && !d.isBusy() )
-											.collect(Collectors.toList())
-											.stream()
 											.findAny();
 		
 		if (delivery.isPresent()) delivery.get().setBusy(true);
 		return delivery;
+	}
+	
+	public boolean deliveriesInQueue() {
+		return deliveries
+				.stream()
+				.filter(d -> !d.isDelivered())
+				.findAny()
+				.isPresent();
 	}
 	
 	// Increase number of rejections for delivery

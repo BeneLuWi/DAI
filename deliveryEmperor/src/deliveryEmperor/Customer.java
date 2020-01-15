@@ -15,8 +15,4 @@ public class Customer {
 		this.deliveryCenter = deliveryCenter;
 	}
 	
-	public void orderDelivery() {
-		deliveryCenter.addDelivery(this);		
-	}
-	
 }

@@ -1,5 +1,8 @@
 package deliveryEmperor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.random.RandomHelper;
 import repast.simphony.space.SpatialMath;
@@ -16,8 +19,10 @@ public class Messenger {
 	private int id;
 	private MessageCenter msgCenter;
 	
-	private GridPoint goal;
-	private Delivery delivery;
+	private GridPoint goal = null;
+	private Delivery currentDelivery;
+	private List<Delivery> deliveryq = new ArrayList<>();
+	
 	
 	public Messenger(ContinuousSpace<Object> space, Grid<Object> grid, Warehouse homeWarehouse, MessageCenter msgCenter, int id) {
 		this.space = space;
@@ -35,24 +40,14 @@ public class Messenger {
 			FIPA_Message msg = msgCenter.getMessage(id);
 			switch(msg.getPerformative()) {
 				case CALL_FOR_PROPOSAL:
-					if(inWarehouse) {
-						Delivery d = msg.getContent().getDelivery();
-						Customer c = d.getCustomer();
-						System.out.println(id + ": Propose " + distanceToLocation(grid.getLocation(c)));
-						msgCenter.send(id, 0, FIPA_Performative.PROPOSE, d, distanceToLocation(grid.getLocation(c)));
-					} else {
-						System.out.println(id + ": Refuse");
-						msgCenter.send(id, 0, FIPA_Performative.REFUSE, msg.getContent().getDelivery());
-					}					
+					Delivery d = msg.getContent().getDelivery();
+					Customer customer = d.getCustomer();
+					System.out.println(id + ": Propose " + distanceToLocation(grid.getLocation(customer)));
+					msgCenter.send(id, 0, FIPA_Performative.PROPOSE, d, distanceToLocation(grid.getLocation(customer)));				
 					break;
-					
 				case ACCEPT_PROPOSAL:
-					Customer c = msg.getContent().getDelivery().getCustomer();
-					inWarehouse = false;
-					delivery = msg.getContent().getDelivery();
-					goal = grid.getLocation(c);
+					deliveryq.add(msg.getContent().getDelivery());
 					break;
-					
 				case REJECT_PROPOSAL:
 					// Nothing happens
 					break;
@@ -67,7 +62,11 @@ public class Messenger {
 	
 	@ScheduledMethod(start = 1, interval = 1)
 	public void walk() {
-		if (goal == null) return; 
+		// No current goal
+		if (goal == null) {
+			nextDelivery();
+			return;
+		}
 		
 		if (!grid.getLocation(this).equals(goal)) {
 			moveTowards(goal);
@@ -76,15 +75,14 @@ public class Messenger {
 		else if (grid.getLocation(this).equals(goal) && !inWarehouse) {
 			
 			// Check if delivery was a success
-			
 			// Package Delivered successfully
 			if(homeWarehouse.getSuccess() > RandomHelper.nextIntFromTo(0, 100)) {
-				msgCenter.send(id, 0, FIPA_Performative.INFORM, delivery);
+				msgCenter.send(id, 0, FIPA_Performative.INFORM, currentDelivery);
+				currentDelivery = null;
 			} else {
-				msgCenter.send(id, 0, FIPA_Performative.FAILURE, delivery);
+				msgCenter.send(id, 0, FIPA_Performative.FAILURE, currentDelivery);
+				currentDelivery = null;
 			}
-			
-			
 			
 			goal = grid.getLocation(homeWarehouse);
 			moveTowards(goal);
@@ -92,12 +90,13 @@ public class Messenger {
 		
 		if (grid.getLocation(this).equals(grid.getLocation(homeWarehouse))) {
 			inWarehouse = true;
+			nextDelivery();
 		}
 			
 	}
 	
 	public double distanceToLocation(GridPoint dest) {
-		NdPoint current = space.getLocation(this);
+		NdPoint current = space.getLocation(homeWarehouse);
 		NdPoint destination = new NdPoint(dest.getX(), dest.getY());
 		return space.getDistance(current, destination);
 	}
@@ -113,8 +112,16 @@ public class Messenger {
 			grid.moveTo(this, (int) Math.round(current.getX()), (int) Math.round(current.getY()));
 		}	
 	}
-
-
+	
+	private void nextDelivery() {
+		if (deliveryq.size() > 0) {
+			currentDelivery = deliveryq.get(0);
+			deliveryq.remove(0);
+			goal = grid.getLocation(currentDelivery.getCustomer());
+			inWarehouse = false;
+		}
+	}
+	
 	public String getCompany() {
 		return this.homeWarehouse.getCompanyName();
 	}
@@ -170,12 +177,12 @@ public class Messenger {
 
 
 	public Delivery getDelivery() {
-		return delivery;
+		return currentDelivery;
 	}
 
 
 	public void setDelivery(Delivery delivery) {
-		this.delivery = delivery;
+		this.currentDelivery = delivery;
 	}
 	
 	

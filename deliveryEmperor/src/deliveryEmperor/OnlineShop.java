@@ -15,15 +15,17 @@ public class OnlineShop {
 	private DeliveryCenter deliveryCenter;
 	private int id = 0;
 	private List<Messenger> messengers;
+	private List<Customer> customers;
 	private List<FIPA_Message> messages = new ArrayList<>();
 	private Map<String, Trust> companyTrust;
 	private boolean negotiating;
 
-	public OnlineShop(MessageCenter msgCenter, DeliveryCenter deliveryCenter, List<Messenger> messengers){
+	public OnlineShop(MessageCenter msgCenter, DeliveryCenter deliveryCenter, List<Messenger> messengers, List<Customer> customers){
 		this.msgCenter = msgCenter;
 		this.deliveryCenter = deliveryCenter;
 		this.negotiating = false;
 		this.messengers = messengers;
+		this.customers = customers;
 		companyTrust = new HashMap<String, Trust>();
 		messengers.forEach(messenger ->
 			companyTrust.put(messenger.getCompany(), new Trust(messenger.getHomeWarehouse()))
@@ -57,6 +59,7 @@ public class OnlineShop {
 		if (msgCenter.messagesAvailable(id)) {
 			FIPA_Message msg = msgCenter.getMessage(id);
 			FIPA_Message_Content content = msg.getContent();
+			int messengerId = msg.getSender();			
 			
 			Delivery delivery = content.getDelivery();
 			
@@ -67,7 +70,16 @@ public class OnlineShop {
 					checkMessages(delivery);	
 					break;
 				case INFORM:
+					printTrust();
 					deliveryCenter.complete(delivery);
+					companyTrust.get(getMessengerById(messengerId).getCompany()).addSuccess();
+					printTrust();
+					break;
+				case FAILURE:
+					printTrust();
+					deliveryCenter.complete(delivery);
+					companyTrust.get(getMessengerById(messengerId).getCompany()).addFailure();
+					printTrust();
 					break;
 				default:
 					break;
@@ -75,10 +87,14 @@ public class OnlineShop {
 		}
 	}
 	
-	
+	@ScheduledMethod(start = 1, interval = 1)
+	public void orderDelivery() {
+		if (!deliveryCenter.deliveriesInQueue()) {
+			customers.forEach(customer -> deliveryCenter.addDelivery(customer));		
+		}
+	}
 
 	public void checkMessages(Delivery d) {
-		
 		List<FIPA_Message> msgs = messages
 				.stream()
 				.filter(m -> m.getContent().getDelivery() == d)
@@ -88,15 +104,19 @@ public class OnlineShop {
 		if (msgs.size() < messengers.size()) return;
 		
 		int refuseCount = 0;
-		double minDistance = Double.MAX_VALUE;
-		int minDistanceId = -1;
+		double minPriceTrustRatio = Double.MAX_VALUE;
+		int bestMessengerId = -1;
 		
 		for (FIPA_Message msg : msgs) {
-			if (msg.getPerformative() == FIPA_Performative.PROPOSE && 
-					msg.getContent().getDistance() < minDistance) {
+			double trust = getTrustByMessengerId(msg.getSender());		
+			double price = msg.getContent().getDistance();
+			double priceTrustRatio = price - (price * trust * 0.8);
+			
+			if (msg.getPerformative() == FIPA_Performative.PROPOSE &&
+					priceTrustRatio < minPriceTrustRatio) {
 				
-				minDistance = msg.getContent().getDistance();
-				minDistanceId = msg.getSender();
+				minPriceTrustRatio = priceTrustRatio;
+				bestMessengerId = msg.getSender();
 				
 			} else if (msg.getPerformative() == FIPA_Performative.REFUSE) {
 				refuseCount++;
@@ -104,7 +124,7 @@ public class OnlineShop {
 		}
 		
 		if (refuseCount < messengers.size()) {
-			final int messengerId = minDistanceId;
+			final int messengerId = bestMessengerId;
 			
 			msgCenter.send(id, messengerId, FIPA_Performative.ACCEPT_PROPOSAL, d);
 			msgs
@@ -113,7 +133,7 @@ public class OnlineShop {
 				.collect(Collectors.toList())
 				.forEach(m -> msgCenter.send(id, m.getSender(), FIPA_Performative.REJECT_PROPOSAL, d));
 			
-			System.out.println("End negotiation: Send " + messengerId);
+			System.out.println("End negotiation: Send " + messengerId + " " + getMessengerById(messengerId).getCompany());
 			
 		} else {
 			deliveryCenter.rejectDelivery(d);
@@ -128,6 +148,21 @@ public class OnlineShop {
 		
 		
 		negotiating = false;
+	}
+	
+	private Messenger getMessengerById(int id) {
+		return this.messengers.stream().filter(messenger -> messenger.getId() == id).findAny().orElse(null);
+	}
+	
+	private double getTrustByMessengerId(int messengerId) {
+		return companyTrust.get(getMessengerById(messengerId).getCompany()).getTrustValue();
+	}
+	
+	private void printTrust() {
+		companyTrust.values().forEach(trust -> 
+			System.out.println("Trust for: " + trust.getCompany().getCompanyName() + ": " + trust.getTrustValue())
+		);
+		
 	}
 	
 }

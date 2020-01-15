@@ -51,6 +51,7 @@ public class DeliveryEmperorBuilder implements ContextBuilder<Object>{
 	
 		
 		// Initialize Customers and place them in Space and Grid
+		List<Customer> customers = new ArrayList<>();
 		double[] x = {15, 5, 40, 35, 40, 10};
 		double[] y = {10, 35, 10, 45, 35, 35};
 		for (int i = 0; i < 6; i++) {
@@ -58,6 +59,8 @@ public class DeliveryEmperorBuilder implements ContextBuilder<Object>{
 			Customer customer = new Customer(space, grid, deliveryCenter);
 			context.add(customer);
 			space.moveTo(customer, x[i], y[i]);
+			
+			customers.add(customer);
 		}
 		
 		// Initialize Warehouses and Messengers and place them in Space and Grid
@@ -81,7 +84,7 @@ public class DeliveryEmperorBuilder implements ContextBuilder<Object>{
 			messengers.add(messenger);			
 		}
 		
-		OnlineShop shop = new OnlineShop(msgCenter, deliveryCenter, messengers);
+		OnlineShop shop = new OnlineShop(msgCenter, deliveryCenter, messengers, customers);
 		context.add(shop);
 		space.moveTo(shop, 0, 0);
 		

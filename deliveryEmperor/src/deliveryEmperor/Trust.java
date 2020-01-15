@@ -10,7 +10,7 @@ public class Trust {
 	
 	public Trust(Warehouse company) {
 		this.company = company;
-		this.trustValue = 1.0;
+		this.trustValue = 0.0;
 	}
 	
 	public void addSuccess() {
