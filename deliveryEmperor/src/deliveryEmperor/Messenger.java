@@ -42,7 +42,6 @@ public class Messenger {
 				case CALL_FOR_PROPOSAL:
 					Delivery d = msg.getContent().getDelivery();
 					Customer customer = d.getCustomer();
-					System.out.println(id + ": Propose " + distanceToLocation(grid.getLocation(customer)));
 					msgCenter.send(id, 0, FIPA_Performative.PROPOSE, d, distanceToLocation(grid.getLocation(customer)));				
 					break;
 				case ACCEPT_PROPOSAL:

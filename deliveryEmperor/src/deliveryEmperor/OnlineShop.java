@@ -70,16 +70,12 @@ public class OnlineShop {
 					checkMessages(delivery);	
 					break;
 				case INFORM:
-					printTrust();
 					deliveryCenter.complete(delivery);
 					companyTrust.get(getMessengerById(messengerId).getCompany()).addSuccess();
-					printTrust();
 					break;
 				case FAILURE:
-					printTrust();
 					deliveryCenter.complete(delivery);
 					companyTrust.get(getMessengerById(messengerId).getCompany()).addFailure();
-					printTrust();
 					break;
 				default:
 					break;
@@ -130,11 +126,10 @@ public class OnlineShop {
 			msgs
 				.stream()
 				.filter(m -> m.getSender() != messengerId && m.getPerformative() == FIPA_Performative.PROPOSE)
-				.collect(Collectors.toList())
 				.forEach(m -> msgCenter.send(id, m.getSender(), FIPA_Performative.REJECT_PROPOSAL, d));
 			
 			System.out.println("End negotiation: Send " + messengerId + " " + getMessengerById(messengerId).getCompany());
-			
+			printTrust();
 		} else {
 			deliveryCenter.rejectDelivery(d);
 			System.out.println("End negotiation: Reject");
