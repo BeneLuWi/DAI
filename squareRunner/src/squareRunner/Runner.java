@@ -12,8 +12,5 @@ public class Runner {
 	public Runner(ContinuousSpace<Object> space, Grid<Object> grid) {
 		this.space = space;
 		this.grid = grid;
-	}
-
-	
-	
+	}	
 }
