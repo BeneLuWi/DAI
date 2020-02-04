@@ -1,7 +1,5 @@
 package squareRunner;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import repast.simphony.context.Context;
 import repast.simphony.context.space.continuous.ContinuousSpaceFactory;
@@ -53,6 +51,84 @@ public class SquareRunnerBuilder implements ContextBuilder<Object>{
 		}
 		
 		
+		
+		/**********************
+		 * 
+		 * INIT FIELDS
+		 * 
+		 **********************/
+		Field[][] fieldsArray = new Field[10][5];
+		for (int x = 0; x < 10; x++) {
+			for (int y  = 0; y < 5; y++) {
+				fieldsArray[x][y] = new Field(space, grid, x, y);
+			}
+		}
+		
+		fieldsArray[0][3].setType(FieldType.SLIPPERY);
+		fieldsArray[3][3].setType(FieldType.SLIPPERY);
+		fieldsArray[3][4].setType(FieldType.SLIPPERY);
+		fieldsArray[5][2].setType(FieldType.SLIPPERY);
+		fieldsArray[6][1].setType(FieldType.SLIPPERY);
+		fieldsArray[7][0].setType(FieldType.SLIPPERY);
+		
+		fieldsArray[1][0].setType(FieldType.TRAP);
+		fieldsArray[2][2].setType(FieldType.TRAP);
+		fieldsArray[8][3].setType(FieldType.TRAP);
+		fieldsArray[9][1].setType(FieldType.TRAP);
+		
+		fieldsArray[3][1].setType(FieldType.IMPASSABLE);
+		fieldsArray[3][2].setType(FieldType.IMPASSABLE);
+		fieldsArray[6][4].setType(FieldType.IMPASSABLE);
+		fieldsArray[7][3].setType(FieldType.IMPASSABLE);
+		fieldsArray[7][4].setType(FieldType.IMPASSABLE);
+		
+		fieldsArray[8][4].setType(FieldType.EXIT);
+		
+		for (int x = 0; x < 10; x++) {
+			for (int y  = 0; y < 5; y++) {
+				context.add(fieldsArray[x][y]);
+				space.moveTo(fieldsArray[x][y], x, y);
+			}
+		}
+		
+		/**********************
+		 * 
+		 * INIT QLEARNING
+		 * 
+		 **********************/
+		
+		QLearning learner = new QLearning(0.1, 0.9, fieldsArray);
+		
+		/**********************
+		 * 
+		 * INIT RUNNERS
+		 * 
+		 **********************/
+
+		Runner runnerOne = new Runner(space, grid, learner);
+		Runner runnerTwo = new Runner(space, grid, learner);
+		
+		context.add(runnerOne);
+		context.add(runnerTwo);
+		
+		space.moveTo(runnerOne, 0, 0);
+		space.moveTo(runnerTwo, 0, 4);
+		
+		RunnerOverseer overseer = new RunnerOverseer(runnerOne, runnerTwo);
+		
+		context.add(overseer);
+		space.moveTo(overseer, 0,0);
+		
+		/**********************
+		 * 
+		 * PLACE ALL AGENTS
+		 * 
+		 **********************/
+		
+		for (Object obj: context) {
+			NdPoint pt = space.getLocation(obj);
+			grid.moveTo(obj, (int) Math.round(pt.getX()), (int) Math.round(pt.getY()));
+		}
 		
 		return context;
 	}

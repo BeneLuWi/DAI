@@ -9,25 +9,14 @@ public class State {
 	double w;
 	double s;
 	double e;
-	int reward;
 
 	public State(int x, int y) {
 		this.point = new GridPoint(x,y);	
 	}
 	
-	
-	
-	public int getReward() {
-		return reward;
-	}
-
-
-
-	public void setReward(int reward) {
-		this.reward = reward;
-	}
-
-
+	/*
+	 * Getters and Setters
+	 */
 
 	public GridPoint getPoint() {
 		return point;
